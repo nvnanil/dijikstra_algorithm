@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import cv2
 import time
 
@@ -23,7 +22,6 @@ def w_space(max_x,max_y):
     for i in range(0,max_x):
         for j in range(0,max_y): 
             all_points.append((i,j)) #Appending all points to the list
-    print(len(all_points))
     for e in all_points:
         x = e[1]
         y = e[0]
@@ -98,20 +96,7 @@ for i in range(5):
             b_canvas[i][k] = (0,0,255)
             b_canvas[b_canvas.shape[0]-1-i][k] = (0,0,255)
             b_canvas[j][b_canvas.shape[1]-1-i] = (0,0,255)
-'''            
-#Drawing Hexagon
-corners = []
-center = (300, 125)
-length = 75 + 2*5*np.arctan(np.radians(30))
-for i in range(6):
-    x = int(center[0] + length * np.cos((i+0.5) * 2 * np.pi / 6))
-    y = int(center[1] + length * np.sin((i+0.5) * 2 * np.pi / 6))
-    corners.append((x, y))
-hexagon = np.array(corners)
-cv2.fillPoly(b_canvas, [hexagon], (0,0,255))
-#ob = np.array(obstacles)
-#Taking every point in the obstacle space
-'''
+
 for c in obstacles: 
     x = c[0]
     y = c[1]
@@ -131,10 +116,10 @@ while ip:
     goal_x= int(input("Enter the x coordinate of the goal point: "))
     goal_y= int(input("Enter the y coordinate of the goal point: "))
 
-    if (start_x > b_canvas.shape[1] or start_y > b_canvas.shape[0] or goal_x > b_canvas.shape[1] or goal_y > b_canvas.shape[0]):
+    if (start_x > b_canvas.shape[1] or start_y > b_canvas.shape[0] or goal_x > b_canvas.shape[1] or goal_y > b_canvas.shape[0]): #Checking whether outside the work space
         print("Invalid input, entered value outside the path space")
         print("Try Agian")
-    elif ch3[start_x][start_y] == 255 or ch3[goal_x][goal_y] == 255:
+    elif ch3[start_x][start_y] == 255 or ch3[goal_x][goal_y] == 255: #Checking for obstacles
         print("Invalid input, entered value in obstacle space")
         print("Try Again")
     else:
@@ -153,22 +138,22 @@ while( (not(c_list[-1][3]==goal_x and c_list[-1][4]==goal_y)) and (not o_list.sh
     c_node = actions(o_list[0],c_list)   
 
     for i in range(len(c_node)): 
-        val = np.where((o_list[:, 3] == c_node[i][2]) & (o_list[:, 4] == c_node[i][3]))[0]  #Searches the open list
+        val = np.where((o_list[:, 3] == c_node[i][2]) & (o_list[:, 4] == c_node[i][3]))[0]  #Searching if child present in open list
         if(val.size>0):
             if (c_node[i][0] < o_list[int(val)][0]):  #Compares the cost
                     o_list[int(val)][0] = c_node[i][0]  
                     o_list[int(val)][2] = c_node[i][1]   
         else:
-                o_list = np.vstack([o_list, [c_node[i][0],node_index+1,c_node[i][1],c_node[i][2],c_node[i][3]]])   # add the child to open list
+                o_list = np.vstack([o_list, [c_node[i][0],node_index+1,c_node[i][1],c_node[i][2],c_node[i][3]]])   #Adding the child to open list
                 node_index +=1
     #Popping element with smallest cost 
     c_list = np.vstack([c_list, o_list[0]])
     #Deleting the existing nodes
     o_list = np.delete(o_list, 0, axis=0)
 
-print('Execuion time ' + str(time.time() - start_time) + ' sec') 
+print('Execuion time ' + str(time.time() - start_time) + ' seconds') 
 b_track = np.array([[goal_x, goal_y]])
-val = np.where((c_list[:, 3] == goal_x) & (c_list[:, 4] == goal_y))[0]      #checks for the goal node parent
+val = np.where((c_list[:, 3] == goal_x) & (c_list[:, 4] == goal_y))[0]  #Checks for the goal node of the parent
 parent = c_list[int(val)][2]
 
 while(parent):
@@ -181,7 +166,7 @@ b_track = b_track.astype(int)
 print("Backtracked path:")
 print(b_track)
 print("Generating video....")
-print("Video saved")
+
 #Marking the start and destination points
 cv2.circle(b_canvas, (goal_x,b_canvas.shape[0]-goal_y), 2, (255, 255, 255), 2)
 cv2.circle(b_canvas, (start_x,b_canvas.shape[0]-start_y), 2, (255, 255, 255), 2)
@@ -195,3 +180,4 @@ for i in range(b_track.shape[0]):
     cv2.circle(b_canvas, (int(b_track[i][0]),b_canvas.shape[0]-int(b_track[i][1])), 2, (200, 255, 0), 1)
     out.write(b_canvas)
 out.release()
+print("Video saved")
